@@ -2501,7 +2501,7 @@ function mainapi:CreateGUI()
 	logov4.Size = UDim2.fromOffset(112, 64)
 	logov4.Position = UDim2.new(1, -42, 0, -19)
 	logov4.BackgroundTransparency = 1
-	logov4.Image = getcustomasset('newvape/assets/new/guiv4.png')
+	logov4.Image = 'rbxassetid://101985420041504' --getcustomasset('newvape/assets/new/guiv4.png')
 	logov4.Parent = logo
 	local children = Instance.new('Frame')
 	children.Name = 'Children'
@@ -6384,7 +6384,7 @@ VapeLogoV4.Position = UDim2.new(1, -32, 0, -16)
 VapeLogoV4.BackgroundColor3 = Color3.new()
 VapeLogoV4.BackgroundTransparency = 1
 VapeLogoV4.BorderSizePixel = 0
-VapeLogoV4.Image = getcustomasset('newvape/assets/new/textv4.png')
+VapeLogoV4.Image = "rbxassetid://101985420041504" --getcustomasset('newvape/assets/new/textv4.png')
 VapeLogoV4.Parent = VapeLogo
 local VapeLogoShadow = VapeLogo:Clone()
 VapeLogoShadow.Position = UDim2.fromOffset(1, 1)
