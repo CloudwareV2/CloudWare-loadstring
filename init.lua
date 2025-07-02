@@ -11,6 +11,7 @@
                                                                                                                                                                               
 ]]--
 
+print("dsfsdf");
 local cloneref: (obj: any) -> any = cloneref or (function(obj: any): any
     return obj;
 end)
