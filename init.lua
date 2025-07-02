@@ -11,8 +11,6 @@
                                                                                                                                                                               
 ]]--
 
---[[ ASCII art header preserved ]]--
-
 local cloneref = cloneref or function(obj)
     return obj
 end
