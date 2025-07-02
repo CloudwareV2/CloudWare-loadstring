@@ -2454,7 +2454,7 @@ run(function()
                 textChatService.OnIncomingMessage = function(message: string?)
                     local prop = Instance.new("TextChatMessageProperties");
                     if message.TextSource and message.TextSource.UserId == lplr.UserId then
-                        prop.PrefixText = "<font color='#ff0000'>[CloudwareV2 public]</font> " .. (message.PrefixText or "");
+                        prop.PrefixText = "<font color='#ff0000'>[CloudwareV2 Rewrite☁️]</font> " .. (message.PrefixText or "");
                     end;
                     return prop;
                 end;
