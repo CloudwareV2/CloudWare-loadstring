@@ -2643,7 +2643,71 @@ run(function()
         end
     end)
 end)
-																																																																		
+
+run(function()
+    local MotionBlurConnection
+    local MotionBlurEffect
+
+    MotionBlur = vape.Categories.Render:CreateModule({
+        Name = 'MotionBlur',
+        Function = function(callback)
+            local Lighting = game:GetService("Lighting")
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local camera = workspace.CurrentCamera
+
+            if callback then
+                local blur = Instance.new("BlurEffect")
+                blur.Name = "MotionBlur"
+                blur.Size = 0
+                blur.Parent = Lighting
+                MotionBlurEffect = blur
+
+                local character = player.Character or player.CharacterAdded:Wait()
+                local root = character:WaitForChild("HumanoidRootPart")
+
+                local lastLook = camera.CFrame.LookVector
+                local lastPosition = root.Position
+                local currentBlur = 0
+
+                local function lerp(a, b, t)
+                    return a + (b - a) * t
+                end
+
+                MotionBlurConnection = RunService.RenderStepped:Connect(function()
+                    if not root or not root.Parent then return end
+                    local look = camera.CFrame.LookVector
+                    local pos = root.Position
+
+                    local rotDelta = math.acos(math.clamp(look:Dot(lastLook), -1, 1))
+                    local rotBlur = math.clamp(rotDelta * 120, 0, 15)
+                    lastLook = look
+
+                    local moveDelta = (pos - lastPosition).Magnitude
+                    local moveBlur = math.clamp(moveDelta * 2.2, 0, 15)
+                    lastPosition = pos
+
+                    local targetBlur = math.clamp(rotBlur + moveBlur, 0, 25)
+                    currentBlur = lerp(currentBlur, targetBlur, 0.2)
+                    blur.Size = currentBlur
+                end)
+            else
+                if MotionBlurEffect then
+                    MotionBlurEffect:Destroy()
+                    MotionBlurEffect = nil
+                end
+                if MotionBlurConnection then
+                    MotionBlurConnection:Disconnect()
+                    MotionBlurConnection = nil
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = "Self Explanatory"
+    })
+end)
+																																																																			
 game:GetService("StarterGui"):SetCore("SendNotification", {
 	Title = "Cloudware rewrite☁️";
 	Text = "Loaded!";
