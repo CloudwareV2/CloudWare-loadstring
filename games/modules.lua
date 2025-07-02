@@ -2467,13 +2467,13 @@ run(function()
 end)
 
 run(function()
-    	local Ambience1: table = {}
-	Ambience1 = vape.Categories.Render:CreateModule({
+	local Ambience1 = vape.Categories.Render:CreateModule({
 		Name = "Ambience 1",
-	        Function = function(callback)
-	            	if callback then
+		Function = function(callback)
+			local lighting = game:GetService("Lighting")
+			if callback then
 				local sky = Instance.new("Sky")
-				sky.Name = "Ambience 1"
+				sky.Name = "Ambience1_Sky"
 				local id = "rbxassetid://122785120445164"
 				sky.SkyboxBk = id
 				sky.SkyboxDn = id
@@ -2483,7 +2483,7 @@ run(function()
 				sky.SkyboxUp = id
 				sky.Parent = lighting
 			else
-				local sky = lightingService:FindFirstChild("Ambience 1")
+				local sky = lighting:FindFirstChild("Ambience1_Sky")
 				if sky then sky:Destroy() end
 			end
 		end,
@@ -2491,15 +2491,14 @@ run(function()
 	})
 end)
 
-
 run(function()
-    	local Ambience2: table = {}
-	Ambience2 = vape.Categories.Render:CreateModule({
+	local Ambience2 = vape.Categories.Render:CreateModule({
 		Name = "Ambience 2",
-	        Function = function(callback)
-	            	if callback then
+		Function = function(callback)
+			local lighting = game:GetService("Lighting")
+			if callback then
 				local sky = Instance.new("Sky")
-				sky.Name = "Ambience 1"
+				sky.Name = "Ambience2_Sky"
 				local id = "rbxassetid://121826915456627"
 				sky.SkyboxBk = id
 				sky.SkyboxDn = id
@@ -2509,7 +2508,7 @@ run(function()
 				sky.SkyboxUp = id
 				sky.Parent = lighting
 			else
-				local sky = lightingService:FindFirstChild("Ambience 1")
+				local sky = lighting:FindFirstChild("Ambience2_Sky")
 				if sky then sky:Destroy() end
 			end
 		end,
