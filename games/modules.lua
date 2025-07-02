@@ -2444,37 +2444,34 @@ run(function()
 		Tooltip = 'Automatically places strong blocks around the me.'
 	})
 end)
-run(function()
-    local TextChatService = game:GetService("TextChatService")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
 
-    local ChatTag = vape.Categories.Render:CreateModule({
+run(function()
+    local ChatTag: table = {}
+    ChatTag = vape.Categories.Render:CreateModule({
         Name = "ChatTag",
-        Function = function(enabled)
-            if enabled then
-                TextChatService.OnIncomingMessage = function(message)
-                    local properties = Instance.new("TextChatMessageProperties")
-                    if message.TextSource and message.TextSource.UserId == LocalPlayer.UserId then
-                        properties.PrefixText = "<font color='#ff0000'>[CloudwareV2 public]</font> " .. (message.PrefixText or "")
-                    end
-                    return properties
-                end
+        Function = function(callback)
+            if callback then
+                textChatService.OnIncomingMessage = function(message: string?)
+                    local prop = Instance.new("TextChatMessageProperties");
+                    if message.TextSource and message.TextSource.UserId == lplr.UserId then
+                        prop.PrefixText = "<font color='#ff0000'>[CloudwareV2 public]</font> " .. (message.PrefixText or "");
+                    end;
+                    return prop;
+                end;
             else
-                TextChatService.OnIncomingMessage = nil
-            end
+                textChatService.OnIncomingMessage = nil;
+            end;
         end,
         Tooltip = "Adds a tag next to your name when you chat."
     })
 end)
-local Ambience1
-run(function()
-	local lighting = game:GetService("Lighting")
 
+run(function()
+    	local Ambience1: table = {}
 	Ambience1 = vape.Categories.Render:CreateModule({
 		Name = "Ambience 1",
-		Function = function(enabled)
-			if enabled then
+	        Function = function(callback)
+	            	if callback then
 				local sky = Instance.new("Sky")
 				sky.Name = "Ambience 1"
 				local id = "rbxassetid://122785120445164"
@@ -2486,7 +2483,7 @@ run(function()
 				sky.SkyboxUp = id
 				sky.Parent = lighting
 			else
-				local sky = lighting:FindFirstChild("Ambience 1")
+				local sky = lightingService:FindFirstChild("Ambience 1")
 				if sky then sky:Destroy() end
 			end
 		end,
@@ -2494,14 +2491,13 @@ run(function()
 	})
 end)
 
-local Ambience2
-run(function()
-	local lighting = game:GetService("Lighting")
 
+run(function()
+    	local Ambience2: table = {}
 	Ambience2 = vape.Categories.Render:CreateModule({
 		Name = "Ambience 2",
-		Function = function(enabled)
-			if enabled then
+	        Function = function(callback)
+	            	if callback then
 				local sky = Instance.new("Sky")
 				sky.Name = "Ambience 1"
 				local id = "rbxassetid://121826915456627"
@@ -2513,7 +2509,7 @@ run(function()
 				sky.SkyboxUp = id
 				sky.Parent = lighting
 			else
-				local sky = lighting:FindFirstChild("Ambience 1")
+				local sky = lightingService:FindFirstChild("Ambience 1")
 				if sky then sky:Destroy() end
 			end
 		end,
@@ -2521,15 +2517,17 @@ run(function()
 	})
 end)
 
-local ZoomUnlocker
 run(function()
-	ZoomUnlocker = vape.Categories.Utility:CreateModule({
-		Name = "Zoom Unlocker",
-		Function = function(enabled)
-			game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = enabled and math.huge or 128
-		end,
-		Tooltip = "Makes it so you can zoom infinitely"
-	})
+    local ZoomUnlocker: table = {};
+    ZoomUnlocker = vape.Categories.Utility:CreateModule({
+        Name = "Zoom Unlocker",
+        Function = function(callback)
+	    if callback then
+            	lplr.CameraMaxZoomDistance = enabled and math.huge or 128
+	    end;
+        end,
+        Tooltip = "Makes it so you can zoom infinitely"
+    })
 end)
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
