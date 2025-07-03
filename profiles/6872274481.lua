@@ -1467,8 +1467,8 @@ run(function()
 	Value = Reach:CreateSlider({
 		Name = 'Range',
 		Min = 0,
-		Max = 18,
-		Default = 18,
+		Max = 20,
+		Default = 20,
 		Function = function(val)
 			if Reach.Enabled then
 				bedwars.CombatConstant.RAYCAST_SWORD_CHARACTER_DISTANCE = val + 2
@@ -1565,9 +1565,9 @@ run(function()
 	CPS = TriggerBot:CreateTwoSlider({
 		Name = 'CPS',
 		Min = 1,
-		Max = 9,
+		Max = 9999,
 		DefaultMin = 7,
-		DefaultMax = 7
+		DefaultMax = 9999
 	})
 end)
 	
