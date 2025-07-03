@@ -2723,56 +2723,50 @@ run(function()
     BetterStrafe = vape.Categories.Combat:CreateModule({
         Name = "BetterStrafe",
         Function = function(enabled)
+            local connection
             if enabled then
-                local target = nil
-                local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                local connection
-
                 local function findNearestPlayer()
-                    local closest = nil
-                    local dist = 10
+                    local closest, closestDist
+                    local myChar = LocalPlayer.Character
+                    local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+
                     for _, player in pairs(Players:GetPlayers()) do
                         if player ~= LocalPlayer and player.Character then
                             local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-                            local myhrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                            if hrp and myhrp then
-                                local distance = (hrp.Position - myhrp.Position).Magnitude
-                                if distance < dist then
+                            if hrp and myHRP then
+                                local dist = (hrp.Position - myHRP.Position).Magnitude
+                                if not closestDist or dist < closestDist then
                                     closest = player
-                                    dist = distance
+                                    closestDist = dist
                                 end
                             end
                         end
                     end
+
                     return closest
                 end
 
                 connection = RunService.Heartbeat:Connect(function()
-                    if not LocalPlayer.Character then return end
-                    local myhrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if not myhrp then return end
+                    local char = LocalPlayer.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if not (hum and hrp) then return end
 
-                    target = findNearestPlayer()
+                    local target = findNearestPlayer()
                     if target and target.Character then
-                        local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
                         local targetHum = target.Character:FindFirstChildOfClass("Humanoid")
-                        if targetHrp and targetHum and targetHum.Health > 0 then
-                            local backOffset = targetHrp.CFrame.LookVector * -3
-                            local newPosition = targetHrp.Position + backOffset
-                            myhrp.CFrame = CFrame.new(newPosition, targetHrp.Position)
-                            if humanoid then
-                                humanoid:Move(targetHum.MoveDirection)
-                            end
-                        else
-                            target = nil
+                        if targetHum and targetHum.Health > 0 then
+                            hum:Move(targetHum.MoveDirection, true)
                         end
                     end
                 end)
 
                 return function()
-                    connection:Disconnect()
+                    if connection then
+                        connection:Disconnect()
+                    end
                 end
             end
         end
     })
-end)																																																																				
+end)
