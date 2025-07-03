@@ -2707,6 +2707,58 @@ run(function()
         Tooltip = "Self Explanatory"
     })
 end)
+
+run(function()
+        local BetterStrafe: table = {["Enabled"] = false};
+        local connection: RBXScriptConnection? = nil;
+        local findNearestPlayer: () -> Player? = function(): Player?
+                local closest: Player? = nil;
+                local closestDist: number? = nil;
+                local myhrp: BasePart? = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart") :: BasePart?;
+                if not myhrp then return nil; end;
+                for _: number, v: Player in next, playersService:GetPlayers() do
+                        if v ~= lplr and v.Character then
+                                local hrp: BasePart? = v.Character:FindFirstChild("HumanoidRootPart") :: BasePart?;
+                                if hrp then
+                                        local dist: number = (hrp.Position - myhrp.Position).Magnitude;
+                                        if not closestDist or dist < closestDist then
+                                                closest = v;
+                                                closestDist = dist;
+                                        end;
+                                end;
+                        end;
+                end;
+                return closest;
+        end;
+        BetterStrafe = vape.Categories.Combat:CreateModule({
+                ["Name"] = "BetterStrafe",
+                ["Function"] = function(callback: boolean): void
+                        if callback then
+                                connection = runService.Heartbeat:Connect(function()
+                                        local hum: Humanoid? = lplr.Character and lplr.Character:FindFirstChildOfClass("Humanoid") :: Humanoid?;
+                                        local hrp: BasePart? = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart") :: BasePart?;
+                                        if not (hum and hrp) then return; end;
+                                        local target: Player? = findNearestPlayer();
+                                        if target and target.Character then
+                                                local targetHum: Humanoid? = target.Character:FindFirstChildOfClass("Humanoid") :: Humanoid?;
+                                                local targetHRP: BasePart? = target.Character:FindFirstChild("HumanoidRootPart") :: BasePart?;
+                                                if targetHum and targetHum.Health > 0 and targetHRP then
+                                                        hum:MoveTo(targetHRP.Position);
+                                                end;
+                                        end;
+                                end);
+
+                                return function(): nil
+                                        if connection then
+                                                connection:Disconnect();
+                                        end;
+                                end;
+                        end;
+                        return nil;
+                end,
+		["Tooltip"] = "code still aids"
+        });
+end);
 																																																																			
 game:GetService("StarterGui"):SetCore("SendNotification", {
 	Title = "Cloudware rewrite☁️";
@@ -2714,59 +2766,4 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 	Duration = 10;
 })
 
-local BetterStrafe
-run(function()
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local LocalPlayer = Players.LocalPlayer
 
-    BetterStrafe = vape.Categories.Combat:CreateModule({
-        Name = "BetterStrafe",
-        Function = function(enabled)
-            local connection
-            if enabled then
-                local function findNearestPlayer()
-                    local closest, closestDist
-                    local myChar = LocalPlayer.Character
-                    local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
-
-                    for _, player in pairs(Players:GetPlayers()) do
-                        if player ~= LocalPlayer and player.Character then
-                            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-                            if hrp and myHRP then
-                                local dist = (hrp.Position - myHRP.Position).Magnitude
-                                if not closestDist or dist < closestDist then
-                                    closest = player
-                                    closestDist = dist
-                                end
-                            end
-                        end
-                    end
-
-                    return closest
-                end
-
-                connection = RunService.Heartbeat:Connect(function()
-                    local char = LocalPlayer.Character
-                    local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                    if not (hum and hrp) then return end
-
-                    local target = findNearestPlayer()
-                    if target and target.Character then
-                        local targetHum = target.Character:FindFirstChildOfClass("Humanoid")
-                        if targetHum and targetHum.Health > 0 then
-                            hum:Move(targetHum.MoveDirection, true)
-                        end
-                    end
-                end)
-
-                return function()
-                    if connection then
-                        connection:Disconnect()
-                    end
-                end
-            end
-        end
-    })
-end)
