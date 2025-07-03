@@ -1565,9 +1565,9 @@ run(function()
 	CPS = TriggerBot:CreateTwoSlider({
 		Name = 'CPS',
 		Min = 1,
-		Max = 9,
+		Max = 9999999,
 		DefaultMin = 7,
-		DefaultMax = 7
+		DefaultMax = 9999999
 	})
 end)
 	
