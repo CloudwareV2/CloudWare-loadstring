@@ -2713,3 +2713,66 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 	Text = "Loaded!";
 	Duration = 10;
 })
+
+local BetterStrafe
+run(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    BetterStrafe = vape.Categories.Combat:CreateModule({
+        Name = "BetterStrafe",
+        Function = function(enabled)
+            if enabled then
+                local target = nil
+                local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                local connection
+
+                local function findNearestPlayer()
+                    local closest = nil
+                    local dist = 10
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character then
+                            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                            local myhrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            if hrp and myhrp then
+                                local distance = (hrp.Position - myhrp.Position).Magnitude
+                                if distance < dist then
+                                    closest = player
+                                    dist = distance
+                                end
+                            end
+                        end
+                    end
+                    return closest
+                end
+
+                connection = RunService.Heartbeat:Connect(function()
+                    if not LocalPlayer.Character then return end
+                    local myhrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if not myhrp then return end
+
+                    target = findNearestPlayer()
+                    if target and target.Character then
+                        local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
+                        local targetHum = target.Character:FindFirstChildOfClass("Humanoid")
+                        if targetHrp and targetHum and targetHum.Health > 0 then
+                            local backOffset = targetHrp.CFrame.LookVector * -3
+                            local newPosition = targetHrp.Position + backOffset
+                            myhrp.CFrame = CFrame.new(newPosition, targetHrp.Position)
+                            if humanoid then
+                                humanoid:Move(targetHum.MoveDirection)
+                            end
+                        else
+                            target = nil
+                        end
+                    end
+                end)
+
+                return function()
+                    connection:Disconnect()
+                end
+            end
+        end
+    })
+end)																																																																				
