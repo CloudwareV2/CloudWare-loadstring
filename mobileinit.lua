@@ -19,7 +19,7 @@ end
 
 local httpService = cloneref(game:GetService("HttpService"))
 local versionPath = "newvape/version.txt"
-local modulesPath = "newvape/games/modules.lua"
+local modulesPath = "newvape/games/6872274481.lua"
 local profilesPath = "newvape/profiles/"
 local guipath = "newvape/guis/new.lua"
 local shapath = "newvape/newlua.sha"
@@ -36,59 +36,6 @@ local function checking(path)
     return true
 end
 
-for _, v in next, { "newvape", "newvape/games", "newvape/profiles", "newvape/guis" } do
-    if not checking(v) then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"))()
-        if first then task.wait(1) end
-    end
-end
-
-if first then
-    print("[FIRST TIME] Fetching and replacing new.lua...")
-    local meta = "https://api.github.com/repos/CloudwareV2/CloudWare-loadstring/contents/new.lua?ref=main"
-    local sm, rm = pcall(function() return game:HttpGet(meta) end)
-    if sm and rm then
-        local dec = httpService:JSONDecode(rm)
-        if dec and dec.download_url and dec.sha then
-            local sf, nl = pcall(function() return game:HttpGet(dec.download_url) end)
-            if sf and nl then
-                writefile(guipath, nl)
-                writefile(shapath, dec.sha)
-                print("[FIRST TIME] new.lua has been replaced with GitHub version.")
-            else
-                warn("[FIRST TIME] Failed to download new.lua from GitHub")
-            end
-        end
-    else
-        warn("[FIRST TIME] Failed to fetch metadata for new.lua")
-    end
-end
-
-local function readfiles(path)
-    local suc, res = pcall(readfile, path)
-    if suc then
-        print(string.format("[FS] Successfully read file: %s", path))
-        return res
-    else
-        warn(string.format("[FS] Failed to read file: %s, Error: %s", path, res or "Unknown error"))
-        return nil
-    end
-end
-
-local function makefiles(path, content)
-    if not path or not content then
-        warn("[FS] Cannot write file: Path or content is nil.")
-        return
-    end
-    print(string.format("[FS] Attempting to write to: %s (Content size: %d bytes)", path, #content))
-    local suc, err = pcall(writefile, path, content)
-    if suc then
-        print(string.format("[FS] Successfully wrote to: %s", path))
-    else
-        warn(string.format("[FS] Failed to write to: %s, Error: %s", path, err or "Unknown error"))
-    end
-end
-
 local function bust_cache(url)
     if not url then return nil end
     if string.find(url, "?", 1, true) then
@@ -99,9 +46,7 @@ local function bust_cache(url)
 end
 
 local function http_get(url, retries, delay)
-    if not url then
-        return false, nil, "Nil URL"
-    end
+    if not url then return false, nil, "Nil URL" end
     for i = 1, retries do
         print(string.format("[HTTP] Attempting to fetch URL: %s (Attempt %d/%d)", url, i, retries))
         local suc, res = pcall(function()
@@ -121,107 +66,142 @@ local function http_get(url, retries, delay)
     return false, nil, "Max retries exceeded"
 end
 
-local apis = bust_cache("https://api.github.com/repos/CloudwareV2/CloudWare-loadstring/contents/new.lua?ref=main")
-local sucNew, resNew, errNew = http_get(apis, 3, 1)
+local function makefiles(path, content)
+    if not path or not content then
+        warn("[FS] Cannot write file: Path or content is nil.")
+        return
+    end
+    print(string.format("[FS] Writing to: %s (%d bytes)", path, #content))
+    local suc, err = pcall(writefile, path, content)
+    if not suc then
+        warn(string.format("[FS] Failed to write to: %s, Error: %s", path, err or "Unknown error"))
+    end
+end
+
+local function readfiles(path)
+    local suc, res = pcall(readfile, path)
+    if suc then return res end
+    warn(string.format("[FS] Failed to read file: %s", path))
+    return nil
+end
+
+for _, v in next, { "newvape", "newvape/games", "newvape/profiles", "newvape/guis" } do
+    checking(v)
+end
+
+local cleanupTargets = {
+    {
+        path = guipath,
+        label = "new.lua",
+        url = "https://raw.githubusercontent.com/CloudwareV2/CloudWare-loadstring/refs/heads/main/new.lua"
+    },
+    {
+        path = modulesPath,
+        label = "6872274481.lua",
+        url = "https://raw.githubusercontent.com/CloudwareV2/CloudWare-loadstring/refs/heads/main/games/6872274481.lua"
+    }
+}
+
+for _, file in next, cleanupTargets do
+    if isfile(file.path) then
+        local suc, err = pcall(delfile, file.path)
+        if suc then
+            print(string.format("[CLEANUP] Deleted %s", file.label))
+        else
+            warn(string.format("[CLEANUP] Failed to delete %s: %s", file.label, err or "Unknown"))
+        end
+    end
+
+    local downloadURL = bust_cache(file.url)
+    local suc, res, err = http_get(downloadURL, 3, 1)
+    if suc and res then
+        makefiles(file.path, res)
+        print(string.format("[REPLACE] %s replaced from RainWare.", file.label))
+    else
+        warn(string.format("[REPLACE] Failed to fetch %s: %s", file.label, err or "Unknown error"))
+    end
+end
+
+
+local metaURL = bust_cache("https://api.github.com/repos/CloudwareV2/CloudWare-loadstring/contents/new.lua?ref=main")
+local sucNew, resNew, errNew = http_get(metaURL, 3, 1)
 
 if sucNew and resNew then
-    local dec, m = pcall(function()
-        return httpService:JSONDecode(resNew)
-    end)
-    if dec and m and m.sha then
-        local stored = readfiles(shapath)
-        if stored ~= m.sha then
-            print("[new.lua] Update detected, downloading...")
-            local new_url = bust_cache(m.download_url)
+    local dec, metadata = pcall(function() return httpService:JSONDecode(resNew) end)
+    if dec and metadata and metadata.sha then
+        local currentSha = readfiles(shapath)
+        if currentSha ~= metadata.sha then
+            print("[new.lua] New SHA detected. Updating...")
+            local new_url = bust_cache(metadata.download_url)
             local z, y, err = http_get(new_url, 3, 1)
             if z and y then
                 makefiles(guipath, y)
-                makefiles(shapath, m.sha)
-                print("[new.lua] new.lua successfully updated.")
+                makefiles(shapath, metadata.sha)
+                print("[new.lua] Updated successfully.")
             else
-                warn("[new.lua] Failed to download updated new.lua: " .. (err or "Unknown error"))
+                warn("[new.lua] Failed to update: " .. (err or "Unknown error"))
             end
         else
-            print("[new.lua] Already up-to-date.")
+            print("[new.lua] Already up to date.")
         end
     else
-        warn("[new.lua] Failed to decode metadata or missing SHA.")
+        warn("[new.lua] Invalid metadata or SHA.")
     end
 else
     warn("[new.lua] Failed to fetch metadata: " .. (errNew or "Unknown error"))
 end
 
-local updateNeeded = false
+
 local commitApiUrl = bust_cache("https://api.github.com/repos/CloudwareV2/CloudWare-loadstring/commits/main")
 local suc, res, err = http_get(commitApiUrl, 3, 1)
-
 if not suc or not res then
-    warn(string.format("[ERROR] Failed to get latest commit info: %s", err or "Unknown error"))
-    return loadstring(game:HttpGet("https://qpvape.org"))()
+    warn(string.format("[ERROR] Could not fetch commit SHA: %s", err or "Unknown error"))
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"))()
 end
 
 local latestCommit
-local success, decodeErr = pcall(function()
+local decodeSuccess = pcall(function()
     local decoded = httpService:JSONDecode(res)
     latestCommit = decoded.sha or (decoded[1] and decoded[1].sha)
 end)
 
-if not success or not latestCommit then
-    warn(string.format("[ERROR] Failed to decode commit info or find SHA: %s", decodeErr or "Unknown error"))
+if not decodeSuccess or not latestCommit then
+    warn("[ERROR] Could not decode latest commit SHA.")
     return loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"))()
 end
 
-local sha_hash = readfiles(versionPath)
-print(string.format("[Version Check] Local SHA: %s", sha_hash or "None found"))
-print(string.format("[Version Check] Latest SHA: %s", latestCommit))
-
-if sha_hash ~= latestCommit then
-    print("[UPDATE] New version detected, starting update process...")
-    updateNeeded = true
-
-    local modules_url = bust_cache("https://raw.githubusercontent.com/CloudwareV2/CloudWare-loadstring/main/games/6872274481.lua")
-    local sucM, resM, errM = http_get(modules_url, 3, 1)
-    if sucM and resM then
-        makefiles(modulesPath, resM)
-    else
-        warn(string.format("[ERROR] Failed to fetch modules.lua content: %s", errM or "Unknown error"))
-    end
-
+local savedCommit = readfiles(versionPath)
+if savedCommit ~= latestCommit then
+    print("[UPDATE] Detected new commit. Updating profiles...")
     local profiles_url = bust_cache("https://api.github.com/repos/CloudwareV2/CloudWare-loadstring/contents/profiles?ref=main")
     local sucP, respP, errP = http_get(profiles_url, 3, 1)
     if sucP and respP then
-        local decode_suc, x = pcall(function()
+        local decodeP, list = pcall(function()
             return httpService:JSONDecode(respP)
         end)
-
-        if decode_suc and type(x) == "table" then
-            print(string.format("[UPDATE] Found %d profile files to check.", #x))
-            for _, v in next, x do
+        if decodeP and type(list) == "table" then
+            for _, v in next, list do
                 if v.type == "file" and v.download_url then
-                    local download_url = bust_cache(v.download_url)
-                    print(string.format("[UPDATE] Downloading profile: %s", v.name))
-                    local z, y, downloadErr = http_get(download_url, 3, 1)
-                    if z and y then
-                        makefiles(profilesPath .. v.name, y)
+                    local profileURL = bust_cache(v.download_url)
+                    local s, content, err = http_get(profileURL, 3, 1)
+                    if s and content then
+                        makefiles(profilesPath .. v.name, content)
                     else
-                        warn(string.format("[ERROR] Failed to download profile '%s': %s", v.name, downloadErr or "Unknown error"))
+                        warn(string.format("[PROFILE] Failed to download %s: %s", v.name, err or "Unknown"))
                     end
                 end
             end
         else
-            warn(string.format("[ERROR] Failed to decode profiles list or it's not a table: %s", decodeErr or "Unknown error"))
+            warn("[PROFILE] Invalid profile list structure.")
         end
     else
-        warn(string.format("[ERROR] Failed to fetch profiles list: %s", errP or "Unknown error"))
+        warn("[PROFILE] Failed to fetch profiles: " .. (errP or "Unknown"))
     end
-
-    if updateNeeded then
-        makefiles(versionPath, latestCommit)
-        print("[UPDATE] Update process completed. Local version SHA updated.")
-    end
+    makefiles(versionPath, latestCommit)
+    print("[UPDATE] version.txt updated.")
 else
-    print("[Version Check] Local version is up-to-date. No update needed.")
+    print("[Version] Already up to date.")
 end
 
-wait(0.5)
+task.wait(0.5)
 return loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua"))()
